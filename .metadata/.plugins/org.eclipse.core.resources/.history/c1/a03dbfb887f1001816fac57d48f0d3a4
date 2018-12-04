@@ -1,0 +1,9 @@
+package guis;
+
+public class GuiRenderer {
+
+	public GuiRenderer(Loader loader) {
+		
+	}
+	
+}

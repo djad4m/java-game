@@ -1,0 +1,119 @@
+package engineTester;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.lwjgl.opengl.Display;
+import org.lwjgl.util.vector.Vector2f;
+import org.lwjgl.util.vector.Vector3f;
+
+import entities.Camera;
+import entities.Entity;
+import entities.Light;
+import entities.Player;
+import guis.Button;
+import guis.GuiRenderer;
+import guis.GuiTexture;
+import models.RawModel;
+import models.TexturedModel;
+import particles.ParticleMaster;
+import particles.ParticleSystem;
+import particles.ParticleTexture;
+import renderEngine.DisplayManager;
+import renderEngine.Loader;
+import renderEngine.MasterRenderer;
+import renderEngine.OBJLoader;
+import terrains.Terrain;
+import textures.ModelTexture;
+import toolbox.DebugMode;
+
+public class MainGameLoop {
+
+	private static boolean DEBUG_MODE = true;
+	
+	public static void main(String[] args) {
+		
+		DisplayManager.createDisplay();
+		Loader loader = new Loader();
+
+		MasterRenderer renderer = new MasterRenderer(loader);
+		
+		RawModel model_player = OBJLoader.loadObjModel("person", loader);
+		
+		TexturedModel staticModel_player = new TexturedModel(model_player,new ModelTexture(loader.LoadTexture("playerTexture")));
+		
+		RawModel model_dragon = OBJLoader.loadObjModel("dragon", loader);
+		
+		TexturedModel staticModel_dragon = new TexturedModel(model_dragon,new ModelTexture(loader.LoadTexture("dragonTexture")));
+		ModelTexture texture_dragon = staticModel_dragon.getTexture();
+		texture_dragon.setShineDamper(10);
+		texture_dragon.setReflectifity(1);	
+		
+		Entity dragon = new Entity(staticModel_dragon, new Vector3f(-100,30,-150), 0, 0, 0, 10);
+		
+		Player player = new Player(staticModel_player, new Vector3f(100,0,-50), 0, 180, 0, 0.6f);
+
+		Camera camera = new Camera(player);
+		camera.setPitch(20f);
+
+		List<GuiTexture> guis = new ArrayList<GuiTexture>();
+		GuiTexture healthAndMana = new GuiTexture(loader.LoadTexture("gui"), new Vector2f(-0.75f, 0.75f), new Vector2f(0.25f,0.25f));
+		guis.add(healthAndMana);
+		
+		GuiRenderer guiRenderer = new GuiRenderer(loader);
+		
+		Light light = new Light(new Vector3f(0,1000,-100),new Vector3f(1,1,1));
+		
+		Terrain terrain = new Terrain(0,-1,loader, new ModelTexture(loader.LoadTexture("grass")), "heightMap2");
+		//Terrain terrain2 = new Terrain(-1,0,loader, new ModelTexture(loader.LoadTexture("grass")), "heightMap");
+		//Terrain terrain3 = new Terrain(0,-1,loader, new ModelTexture(loader.LoadTexture("grass")), "heightMap");
+		//Terrain terrain4 = new Terrain(0,0,loader, new ModelTexture(loader.LoadTexture("grass")), "heightMap");
+		
+		ParticleMaster.init(loader, renderer.getProjectionMatrix());
+		
+		ParticleTexture particleTexture = new ParticleTexture(loader.LoadTexture("particleAtlas"), 4);
+		
+		ParticleSystem particleSystem = new ParticleSystem(particleTexture, 50, 40, 0.2f, 2);
+		
+		while(!Display.isCloseRequested() && Display.isActive()) {
+			
+				DebugMode.CheckForDebugMode();
+			
+				camera.Move();
+				player.move(terrain);
+				
+				particleSystem.generateParticles(player.getPoisition());
+				
+				ParticleMaster.update(camera);
+
+				renderer.processEntity(player);
+				renderer.processEntity(dragon);
+			
+				renderer.render(light, camera);
+			
+				renderer.processTerrain(terrain);
+			
+				ParticleMaster.renderParticles(camera);
+			
+				guiRenderer.render(guis);
+			
+				if(Button.DetectCollision(healthAndMana)) {
+					
+					System.out.println("Colliding!");
+					
+				}
+				
+				DisplayManager.updateDisplay();
+
+				
+		}
+		
+		ParticleMaster.cleanUp();
+		guiRenderer.cleanUP();
+		renderer.cleanUP();
+		loader.cleanUP();
+		DisplayManager.closeDisplay();
+		
+	}
+	
+}

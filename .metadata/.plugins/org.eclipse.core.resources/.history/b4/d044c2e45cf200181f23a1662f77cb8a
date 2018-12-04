@@ -1,0 +1,8 @@
+package particles;
+
+public class ParticleTexture {
+
+	private int textureID;
+	private int numberOfRows;
+	
+}

@@ -1,0 +1,31 @@
+package guis;
+
+import org.lwjgl.input.Mouse;
+import org.lwjgl.util.vector.Vector2f;
+
+import renderEngine.DisplayManager;
+
+public class Button {
+
+	public static float MOUSE_X;
+	public static float MOUSE_Y;
+	public static Vector2f MOUSE_POS;
+	
+	public static void DetectPress(GuiTexture gui) {
+		
+		MOUSE_X =  (2f * Mouse.getX()) / DisplayManager.WIDTH - 1;
+		MOUSE_Y =  (2f * Mouse.getY()) / DisplayManager.HEIGHT - 1f;
+	
+		MOUSE_POS = new Vector2f(MOUSE_X, MOUSE_Y);
+		
+		if(MOUSE_POS.x > gui.getPosition().x * gui.getScale().x ) {
+			
+			System.out.print("!");
+			
+		}
+		
+		System.out.print(MOUSE_POS + "  " + gui.getPosition().y "\n");
+		
+	}
+	
+}

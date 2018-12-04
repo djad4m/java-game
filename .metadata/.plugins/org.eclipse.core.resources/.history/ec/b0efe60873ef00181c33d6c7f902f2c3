@@ -1,0 +1,87 @@
+package engineTester;
+
+import org.lwjgl.opengl.Display;
+import org.lwjgl.util.vector.Vector3f;
+
+import entities.Camera;
+import entities.Entity;
+import entities.Light;
+import entities.Player;
+import models.RawModel;
+import models.TexturedModel;
+import renderEngine.DisplayManager;
+import renderEngine.Loader;
+import renderEngine.MasterRenderer;
+import renderEngine.OBJLoader;
+import terrains.Terrain;
+import textures.ModelTexture;
+import toolbox.DebugMode;
+
+public class MainGameLoop {
+
+	private static boolean DEBUG_MODE = true;
+	
+	public static void main(String[] args) {
+		
+		DisplayManager.createDisplay();
+		Loader loader = new Loader();
+
+		if(DEBUG_MODE == true) {
+			System.out.println("Utils Loaded");
+		}
+
+		RawModel model_player = OBJLoader.loadObjModel("person", loader);
+		
+		TexturedModel staticModel_player = new TexturedModel(model_player,new ModelTexture(loader.LoadTexture("playerTexture")));
+		
+		RawModel model_dragon = OBJLoader.loadObjModel("dragon", loader);
+		
+		TexturedModel staticModel_dragon = new TexturedModel(model_dragon,new ModelTexture(loader.LoadTexture("dragonTexture")));
+		ModelTexture texture_dragon = staticModel_dragon.getTexture();
+		texture_dragon.setShineDamper(10);
+		texture_dragon.setReflectifity(1);	
+		
+		Entity dragon = new Entity(staticModel_dragon, new Vector3f(100,0,-150), 0, 0, 0, 10);
+		
+		Player player = new Player(staticModel_player, new Vector3f(100,0,-50), 0, 180, 0, 0.6f);
+
+		Camera camera = new Camera(player);
+		camera.setPitch(20f);
+
+		Light light = new Light(new Vector3f(0,1000,-100),new Vector3f(1,1,1));
+		
+		Terrain terrain = new Terrain(0,-1,loader, new ModelTexture(loader.LoadTexture("grass")), "heightMap");
+		//Terrain terrain2 = new Terrain(-1,0,loader, new ModelTexture(loader.LoadTexture("grass")), "heightMap");
+		//Terrain terrain3 = new Terrain(0,-1,loader, new ModelTexture(loader.LoadTexture("grass")), "heightMap");
+		//Terrain terrain4 = new Terrain(0,0,loader, new ModelTexture(loader.LoadTexture("grass")), "heightMap");
+		
+		MasterRenderer renderer = new MasterRenderer();
+		
+		while(!Display.isCloseRequested()) {
+			
+			DebugMode.CheckForDebugMode();
+			
+			camera.Move();
+			player.move(terrain);
+			
+			renderer.processEntity(player);
+			renderer.processEntity(dragon);
+			
+			renderer.render(light, camera);
+			
+			renderer.processTerrain(terrain);
+			//renderer.processTerrain(terrain2);
+			//renderer.processTerrain(terrain3);
+			//renderer.processTerrain(terrain4);
+			
+			DisplayManager.updateDisplay();
+			
+		}
+
+		renderer.cleanUP();
+		loader.cleanUP();
+		DisplayManager.closeDisplay();
+		
+	}
+	
+}

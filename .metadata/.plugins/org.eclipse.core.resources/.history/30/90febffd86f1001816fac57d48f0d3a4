@@ -1,0 +1,11 @@
+package guis;
+
+public class GuiTexture {
+
+	private int texture;
+	private Vector2f position;
+	private Vector2f scale;
+	
+	
+	
+}

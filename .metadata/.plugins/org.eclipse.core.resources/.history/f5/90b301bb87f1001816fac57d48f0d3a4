@@ -1,0 +1,11 @@
+package guis;
+
+public class GuiRenderer {
+
+	private final RawModel quad;
+	
+	public GuiRenderer(Loader loader) {
+		
+	}
+	
+}
